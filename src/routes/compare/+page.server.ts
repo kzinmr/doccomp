@@ -34,7 +34,7 @@ export const actions: Actions = {
       }
       const comparison = data.get('comparison')?.toString() ?? '';
       const model_name = 'gpt-4-0613'; // "gpt-3.5-turbo-0613";
-      if (comparison === 'concat') {
+      if (comparison === 'stuff_rag') {
         // https://js.langchain.com/docs/use_cases/question_answering/
         const splitter = new RecursiveCharacterTextSplitter({
           chunkSize: 200,

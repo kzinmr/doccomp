@@ -21,7 +21,7 @@
       text2 = data.text2;
     }
   });
-  type compareMethod = 'function_calling' | 'concat';
+  type compareMethod = 'function_calling' | 'stuff_rag';
   let comparison: compareMethod;
   $: ready = query.length > 0 && text1.length > 0 && text2.length > 0 && comparison;
   let formLoading = false;
@@ -91,7 +91,7 @@
         </dd>
         <dt>
           <label>
-            <input type="radio" bind:group={comparison} name="comparison" value={'concat'} />
+            <input type="radio" bind:group={comparison} name="comparison" value={'stuff_rag'} />
             Simple RetrievalQAChain
           </label>
         </dt>
