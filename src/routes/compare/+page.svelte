@@ -241,23 +241,24 @@ Aテクノロジー株式会社（ 以下、「甲」という。） と、B商�
       <h3>Comparison Mode:</h3>
       2文書の比較を行うにあたり、LLMへの問いかけ方を選択します。
       <dl>
-          <dt>
+        <dt>
           <label>
               <input type="radio" bind:group={comparison} name="comparison" value={"function_calling"} />
               Function Calling
           </label>
-          </dt>
-          <dd>
-            各文書ごとに個別のベクターストア(Tools)を用意し、各々にFunction Callingとして問いかけた結果をAgentがまとめて返す。
-          </dd>
+        </dt>
+        <dd>
+          各文書ごとに個別のベクターストア(Tools)を用意し、各々にFunction Callingとして問いかけた結果をAgentがまとめて返す。
+        </dd>
+        <dt>
           <label>
-              <input type="radio" bind:group={comparison} name="comparison" value={"concat"} />
-              Concatenate and Complete
+            <input type="radio" bind:group={comparison} name="comparison" value={"concat"} />
+            Concatenate and Complete
           </label>
-          </dt>
-          <dd>
-            各文書を単一ベクターストアに格納し、単純なRAG QAとして問いかけた結果を返す。
-          </dd>
+        </dt>
+        <dd>
+          各文書を単一ベクターストアに格納し、単純なRAG QAとして問いかけた結果を返す。
+        </dd>
       </dl>
 
       <button disabled={!ready} type="submit"> Submit </button>
