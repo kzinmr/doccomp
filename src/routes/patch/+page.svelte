@@ -25,10 +25,10 @@ Spock: It is backed like a Vulcan.
 Kirk: Or like a Romulan?
 Spock: Very like a Romulan.
 -- Trekkie`;
-  let new_text_target = "";
-  let diff = "";
+  let new_text_target = '';
+  let diff = '';
   let patch_list;
-  let patch_text = "";
+  let patch_text = '';
   let patched = false;
   let results;
   let html = '';
@@ -38,19 +38,19 @@ Spock: Very like a Romulan.
   function diff_launch() {
     const start = new Date().getTime();
     diff = dmp.diff_main(new_text, old_text, true);
-    elapsed_diff = (new Date().getTime() - start);
+    elapsed_diff = new Date().getTime() - start;
     if (diff.length > 2) {
       dmp.diff_cleanupSemantic(diff);
     }
     patch_list = dmp.patch_make(new_text, old_text, diff);
     patch_text = dmp.patch_toText(patch_list);
-    patched=true;
+    patched = true;
   }
   function patch_launch() {
     const patches = dmp.patch_fromText(patch_text);
     const start = new Date().getTime();
     results = dmp.patch_apply(patches, old_text_target);
-    elapsed_patch = (new Date().getTime() - start);
+    elapsed_patch = new Date().getTime() - start;
     new_text_target = results[0];
     results = results[1];
     for (const result of results) {
@@ -63,19 +63,9 @@ Spock: Very like a Romulan.
   }
 </script>
 
-<header class="header">
-  <title>Diff, Match and Patch</title>
-  <nav>
-    <ul class="header-links">
-      <li><a href="/diff">Diff</a></li>
-      <li><a href="/match">Match</a></li>
-      <li><a href="/patch">Patch</a></li>
-    </ul>
-  </nav>
-</header>
 <body>
-  <h1> Diff, Match and Patch </h1>
-  <h2> Demo of Patch </h2>
+  <h1>Diff, Match and Patch</h1>
+  <h2>Demo of Patch</h2>
   <p>
     2つのテキストを互いに差分し、パッチのリストを生成することができる。
     そしてこれらのパッチを第三のテキストに対して適用することができる。
@@ -90,35 +80,43 @@ Spock: Very like a Romulan.
   </p>
 
   <form on:submit|preventDefault={diff_launch}>
-    <h3> Shakespeare's copy: </h3>
+    <h3>Shakespeare's copy:</h3>
     <table width="100%">
-      <td width="50%">Old Version:<br>
-        <textarea bind:value={new_text} rows=10 />
+      <td width="50%"
+        >Old Version:<br />
+        <textarea bind:value={new_text} rows="10" />
       </td>
-      <td width="50%">New Version:<br>
-        <textarea bind:value={old_text} rows=10 />
+      <td width="50%"
+        >New Version:<br />
+        <textarea bind:value={old_text} rows="10" />
       </td>
     </table>
     <p>
       <button type="submit"> Compute Patch </button>
     </p>
     {#if patch_text.length > 0}
-      <blockquote><div id="diffoutputdiv">
-        {@html marked(`<fieldset><legend>Patch:</legend><pre>${patch_text}</pre></fieldset>`)}
-      </div></blockquote>
+      <blockquote>
+        <div id="diffoutputdiv">
+          {@html marked(`<fieldset><legend>Patch:</legend><pre>${patch_text}</pre></fieldset>`)}
+        </div>
+      </blockquote>
       <div id="diffdatediv">{(elapsed_diff / 1000).toFixed(3)}s</div>
     {/if}
   </form>
   <form on:submit|preventDefault={patch_launch}>
-    <h3> Trekkie's copy: </h3>
-    <table width="100%"><tr>
-      <td width="50%">Old Version:<br>
-        <textarea bind:value={old_text_target} rows=10 />
-      </td>
-      <td width="50%">New Version:<br>
-        <textarea bind:value={new_text_target} rows=10 />
-      </td>
-    </tr></table>
+    <h3>Trekkie's copy:</h3>
+    <table width="100%">
+      <tr>
+        <td width="50%"
+          >Old Version:<br />
+          <textarea bind:value={old_text_target} rows="10" />
+        </td>
+        <td width="50%"
+          >New Version:<br />
+          <textarea bind:value={new_text_target} rows="10" />
+        </td>
+      </tr>
+    </table>
     <p>
       <button disabled={!patched}> Apply Patch </button>
     </p>
