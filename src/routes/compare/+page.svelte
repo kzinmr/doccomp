@@ -1,12 +1,20 @@
 <script lang="ts">
-  import { afterUpdate } from 'svelte';
+  import { afterUpdate, onMount } from 'svelte';
   import { enhance } from '$app/forms';
   import type { ActionData, Snapshot } from './$types';
   import { marked } from 'marked';
   
   let query = "金額を比較してください"
-  let text1 = ``;
-    let text2 = ``;
+  let text1 = "";
+  let text2 = "";
+  onMount(async () => {
+    const response = await fetch('/sample.json');
+    if (response.ok) {
+      const data = await response.json();
+      text1 = data.text1;
+      text2 = data.text2;
+    }
+  });
   type compareMethod = "function_calling" | "concat";
   let comparison: compareMethod;
   $: ready = query.length > 0 && text1.length > 0 && text2.length > 0 && comparison;

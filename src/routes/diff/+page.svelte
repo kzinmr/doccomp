@@ -1,10 +1,20 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { diff_match_patch } from 'diff-match-patch';
     import { marked } from 'marked';
 
     const dmp = new diff_match_patch();
-    let text1 = ``;
-    let text2 = ``;
+
+    let text1 = "";
+    let text2 = "";
+    onMount(async () => {
+      const response = await fetch('/sample.json');
+      if (response.ok) {
+        const data = await response.json();
+        text1 = data.text1;
+        text2 = data.text2;
+      }
+    });
     let timeout = 1;
     let editcost = 4;
 
