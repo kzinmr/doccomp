@@ -253,11 +253,12 @@ Aテクノロジー株式会社（ 以下、「甲」という。） と、B商�
         <dt>
           <label>
             <input type="radio" bind:group={comparison} name="comparison" value={"concat"} />
-            Concatenate and Complete
+            Simple RetrievalQAChain
           </label>
         </dt>
         <dd>
           各文書を単一ベクターストアに格納し、単純なRAG QAとして問いかけた結果を返す。
+          具体的には、質問に類似関連する文書チャンクを質問プロンプトにそのまま追加で詰めて投げる(stuff chaining)。
         </dd>
       </dl>
 
@@ -271,6 +272,10 @@ Aテクノロジー株式会社（ 以下、「甲」という。） と、B商�
       <div>Model name: {form.model_name}</div>
       <div>Embed time: {(form.elapsed_embed / 1000).toFixed(1)}s</div>
       <div>Chain time: {(form.elapsed_chain / 1000).toFixed(1)}s</div>
+      <div>Intermediate Steps:</div>
+      {#each form.steps as step}
+        <p> {step.action_log} → {step.observation}</p>
+      {/each}
     {/if}
   </div>
 </body>

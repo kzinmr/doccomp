@@ -82,7 +82,8 @@ export const actions: Actions = {
               answer: answer,
               elapsed_embed: elapsed_embed,
               elapsed_chain: elapsed_chain,
-              model_name: model_name
+              model_name: model_name,
+              steps: []
             }
           } catch(e) {
             console.error(e);
@@ -136,27 +137,33 @@ export const actions: Actions = {
           temperature: 0,
           openAIApiKey: openaikey
         });
-        const options = {
-          agentType: "openai-functions",
-          verbose: true,
-          agentArgs: {
-            prefix,
-          },
-        };
         const executor = await initializeAgentExecutorWithOptions(
           tools,
           chat,
-          options
+          {
+            agentType: "openai-functions",
+            verbose: true,
+            returnIntermediateSteps: true,
+            agentArgs: {
+              prefix,
+            },
+          }
         );
         const prompt = `document-1とdocument-2について比較し日本語で回答せよ: ${question}`;
         const result = await executor.call({input: prompt});
         const answer: string = result.output;
+        const steps = result.intermediateSteps.map((step: any) => {
+          const {action, observation} = step;
+          const { log } = action;
+          return { action_log: log, observation: observation }
+        });
         const elapsed_chain = (new Date().getTime() - start_chain);
         return {
           answer: answer,
           elapsed_embed: elapsed_embed,
           elapsed_chain: elapsed_chain,
-          model_name: model_name
+          model_name: model_name,
+          steps: steps
         }
       } else {
         console.error("Comparison", comparison, event, data);
