@@ -7,9 +7,15 @@
   let query = "金額を比較してください"
   let text1 = "";
   let text2 = "";
+
+  export const snapshot: Snapshot = {
+    capture: () => ({query, text1, text2}),
+    restore: (values) => ({query, text1, text2} = values),
+  };
+
   onMount(async () => {
     const response = await fetch('/sample.json');
-    if (response.ok) {
+    if (response.ok && text1.length === 0 && text2.length === 0) {
       const data = await response.json();
       text1 = data.text1;
       text2 = data.text2;
@@ -20,11 +26,6 @@
   $: ready = query.length > 0 && text1.length > 0 && text2.length > 0 && comparison;
   let formLoading = false;
   export let form: ActionData = null;
-
-  export const snapshot: Snapshot = {
-    capture: () => ({query, text1, text2}),
-    restore: (values) => ({query, text1, text2} = values),
-  };
 
   let element: HTMLDivElement;
   afterUpdate(() => {
