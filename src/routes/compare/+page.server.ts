@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, RequestEvent } from '@sveltejs/kit';
 // import { OPENAI_API_KEY } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import getNTokens from '$lib/utils/tokenizer';
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
@@ -11,10 +12,10 @@ import { Document } from "langchain/document";
 export const actions: Actions = {
   default: async (event: RequestEvent) => {
     try {
-      if (!process.env.OPENAI_API_KEY) {
+      if (!env.OPENAI_API_KEY) {
         throw new Error('OPENAI_API_KEY env variable not set');
       }
-      const openaikey = process.env.OPENAI_API_KEY;
+      const openaikey = env.OPENAI_API_KEY;
 
       let tokenCount = 0;
       const data = await event.request.formData();
@@ -60,11 +61,12 @@ export const actions: Actions = {
           console.error("failed to create vector store");
         }
       } else if (comparison === "function_calling") {
-        alert("Function Calling is not implemented yet.");
+        console.error("Function Calling is not implemented yet.");
       } else {
         console.error("Comparison", comparison, event, data);
       }
     } catch(e) {
+      console.error(e);
       return fail(500, {
         incorrect: true
       });
