@@ -122,7 +122,6 @@ Spock: Very like a Romulan.
 		</p>
 	</form>
 	{#if html.length > 0}
-		<!-- svelte-ignore no-at-html-tags -->.
 		<ol id="passfaildiv">{@html marked(html)}</ol>
 		<div id="patchdatediv">{(elapsed_patch / 1000).toFixed(3)}s</div>
 	{/if}
