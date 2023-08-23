@@ -2,11 +2,15 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, RequestEvent } from '@sveltejs/kit';
 import { OPENAI_API_KEY } from "$env/static/private";
 import getNTokens from '$lib/utils/tokenizer';
+
+import { Document } from "langchain/document";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
-import { OpenAI } from "langchain/llms/openai";
+import { ChatOpenAI } from "langchain/chat_models/openai";
 import { RetrievalQAChain } from "langchain/chains";
-import { Document } from "langchain/document";
+import { ChainTool } from "langchain/tools";
+import { initializeAgentExecutorWithOptions } from "langchain/agents";
 
 export const actions: Actions = {
   default: async (event: RequestEvent) => {
@@ -18,7 +22,7 @@ export const actions: Actions = {
 
       let tokenCount = 0;
       const data = await event.request.formData();
-      const question = data.get('question')?.toString() ?? "";
+      const question = data.get('query')?.toString() ?? "";
       tokenCount += getNTokens(question);
       const text1: string = data.get('doc1')?.toString() ?? "";
       tokenCount += getNTokens(text1);
@@ -29,10 +33,28 @@ export const actions: Actions = {
         throw new Error('Too many tokens');
       }
       const comparison = data.get('comparison')?.toString() ?? "";
+      const model_name = "gpt-4-0613";  // "gpt-3.5-turbo-0613";
       if (comparison === "concat") {
-        const doc1 = new Document({ pageContent: text1, metadata: { source: "1" } });
-        const doc2 = new Document({ pageContent: text2, metadata: { source: "2" } });
-        const docs: Document[] = [doc1, doc2];
+        // https://js.langchain.com/docs/use_cases/question_answering/
+        const splitter = new RecursiveCharacterTextSplitter({
+          chunkSize: 200,
+          chunkOverlap: 3,
+        });
+        const texts1 = await splitter.splitText(text1)
+        const docs1 = texts1.map((chunk: string, c_index:number) =>
+          new Document({
+            pageContent: chunk,
+            metadata: { source: `1-${c_index}` }
+          })
+        );
+        const texts2 = await splitter.splitText(text2)
+        const docs2 = texts2.map((chunk: string, c_index:number) =>
+          new Document({
+            pageContent: chunk,
+            metadata: { source: `2-${c_index}` }
+          })
+        );
+        const docs: Document[] = docs1.concat(docs2);
         try {
           const start_embed = new Date().getTime();
           const embeddings = new OpenAIEmbeddings({ openAIApiKey: openaikey});
@@ -40,27 +62,102 @@ export const actions: Actions = {
           const elapsed_embed = (new Date().getTime() - start_embed);
           try {
             const start_chain = new Date().getTime();
-            const model = new OpenAI({ openAIApiKey: openaikey});
-            const chain = RetrievalQAChain.fromLLM(model, store.asRetriever());
+            const model = new ChatOpenAI({
+              modelName: model_name,
+              temperature: 0,
+              openAIApiKey: openaikey
+            });
+            const chain = RetrievalQAChain.fromLLM(
+              model,
+              store.asRetriever(),
+            );
+            console.log("Q:", question);
             const res = await chain.call({
               query: question,
             });
             const elapsed_chain = (new Date().getTime() - start_chain);
             const answer: string = res.text;
+            // res.sourceDocuments
             return {
               answer: answer,
               elapsed_embed: elapsed_embed,
               elapsed_chain: elapsed_chain,
+              model_name: model_name
             }
           } catch(e) {
             console.error(e);
-            console.error("failed to call LLM chain");
+            throw new Error("failed to call LLM chain");
           }
         } catch(e) {
-          console.error("failed to create vector store");
+          console.error(e);
+          throw new Error("failed to create vector store");
         }
       } else if (comparison === "function_calling") {
-        console.error("Function Calling is not implemented yet.");
+        // https://js.langchain.com/docs/modules/agents/tools/how_to/agents_with_vectorstores
+        // https://python.langchain.com/docs/integrations/toolkits/document_comparison_toolkit
+        const splitter = new RecursiveCharacterTextSplitter({
+          chunkSize: 200,
+          chunkOverlap: 3,
+        });
+        const start_embed = new Date().getTime();
+        const toolPromises = [text1, text2].map(async (text: string, index: number) => {
+          const texts = await splitter.splitText(text)
+          const docs = texts.map((chunk: string, c_index:number) =>
+            new Document({
+              pageContent: chunk,
+              metadata: { source: `${index+1}-${c_index}` }
+            })
+          );
+          const embeddings = new OpenAIEmbeddings({ openAIApiKey: openaikey});
+          const store = await MemoryVectorStore.fromDocuments(docs, embeddings);
+          const model = new ChatOpenAI({
+            modelName: model_name,
+            temperature: 0,
+            openAIApiKey: openaikey
+          });
+          const chain = RetrievalQAChain.fromLLM(
+            model,
+            store.asRetriever(),
+          );
+          return new ChainTool({
+            name: `document-${index+1}-QA`,
+            description: `useful when you want to answer questions about a document-${index+1}`,
+            chain: chain
+          });
+        });
+        const tools = await Promise.all(toolPromises);
+        const elapsed_embed = (new Date().getTime() - start_embed);
+        console.log("elapsed_embed", elapsed_embed);
+
+        const start_chain = new Date().getTime();
+        const prefix = "You are a useful assitant for answering questions by comparing two documents."
+        const chat = new ChatOpenAI({
+          modelName: model_name,
+          temperature: 0,
+          openAIApiKey: openaikey
+        });
+        const options = {
+          agentType: "openai-functions",
+          verbose: true,
+          agentArgs: {
+            prefix,
+          },
+        };
+        const executor = await initializeAgentExecutorWithOptions(
+          tools,
+          chat,
+          options
+        );
+        const prompt = `document-1とdocument-2について比較し日本語で回答せよ: ${question}`;
+        const result = await executor.call({input: prompt});
+        const answer: string = result.output;
+        const elapsed_chain = (new Date().getTime() - start_chain);
+        return {
+          answer: answer,
+          elapsed_embed: elapsed_embed,
+          elapsed_chain: elapsed_chain,
+          model_name: model_name
+        }
       } else {
         console.error("Comparison", comparison, event, data);
       }
