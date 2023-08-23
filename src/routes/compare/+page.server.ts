@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, RequestEvent } from '@sveltejs/kit';
-import { OPENAI_API_KEY } from "$env/static/private";
+// import { OPENAI_API_KEY } from "$env/static/private";
 import getNTokens from '$lib/utils/tokenizer';
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
@@ -11,10 +11,10 @@ import { Document } from "langchain/document";
 export const actions: Actions = {
   default: async (event: RequestEvent) => {
     try {
-      if (!OPENAI_API_KEY) {
+      if (!process.env.OPENAI_API_KEY) {
         throw new Error('OPENAI_API_KEY env variable not set');
       }
-      const openaikey = OPENAI_API_KEY;
+      const openaikey = process.env.OPENAI_API_KEY;
 
       let tokenCount = 0;
       const data = await event.request.formData();
