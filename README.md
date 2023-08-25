@@ -1,6 +1,9 @@
-# google-diff-match-patch demo
+# doccomp
+A demo project for character-based diff function and LLM-based comparison function.
 
-cloned from [diff_match_patch/demos](https://neil.fraser.name/software/diff_match_patch/demos/)
+Diff/Match/Patch features are from [diff_match_patch/demos](https://neil.fraser.name/software/diff_match_patch/demos/).
+
+Compare feature is inspired from [LangChain Document Comparison Toolkit](https://python.langchain.com/docs/integrations/toolkits/document_comparison_toolkit).
 
 Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
 
