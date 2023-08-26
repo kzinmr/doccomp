@@ -22,6 +22,7 @@
   let cleanup: cleanupMethod;
   $: ready = text1.length > 0 && text2.length > 0 && timeout >= 0 && editcost >= 3 && cleanup;
   let elapsed = 0;
+  let d: [number, string][] = [];
   let ds: string | null = null;
 
   function handleSubmit() {
@@ -29,7 +30,7 @@
     dmp.Diff_EditCost = editcost;
 
     const start = new Date().getTime();
-    const d = dmp.diff_main(text1, text2);
+    d = dmp.diff_main(text1, text2);
     elapsed = new Date().getTime() - start;
 
     switch (cleanup) {
@@ -42,7 +43,7 @@
       default:
         break;
     }
-
+    d = d;
     ds = dmp.diff_prettyHtml(d);
   }
 </script>
@@ -104,6 +105,28 @@
     <button disabled={!ready} type="submit"> Submit </button>
   </form>
 
+  {#if d.length > 0}
+    <div class="container">
+      <div class="box">
+        {#each d as element}
+          {#if element[0] === -1}
+            <span class="deleted">{@html element[1]}</span>
+          {:else if element[0] === 0}
+            {@html element[1].replaceAll('\n', '<br>')}
+          {/if}
+        {/each}
+      </div>
+      <div class="box">
+        {#each d as element}
+          {#if element[0] === 1}
+            <span class="added">{@html element[1]}</span>
+          {:else if element[0] === 0}
+            {@html element[1].replaceAll('\n', '<br>')}
+          {/if}
+        {/each}
+      </div>
+    </div>
+  {/if}
   {#if ds !== null}
     <div id="outputdiv">{@html marked(ds)}</div>
     <div>{(elapsed / 1000).toFixed(1)}s</div>
@@ -114,5 +137,28 @@
   textarea {
     width: 100%;
     height: 200px;
+  }
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100%;
+  }
+  .box {
+    border: 2px dotted black;
+    padding: 20px;
+    margin: 10px;
+  }
+  .box .deleted {
+    display: inline;
+    text-decoration: none;
+    background-color: #ffb6ba;
+    border-radius: 0.2em;
+  }
+  .box .added {
+    display: inline;
+    text-decoration: none;
+    background-color: #97f295;
+    border-radius: 0.2em;
   }
 </style>

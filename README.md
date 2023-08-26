@@ -1,4 +1,5 @@
 # doccomp
+
 A demo project for character-based diff function and LLM-based comparison function.
 
 Diff/Match/Patch features are from [diff_match_patch/demos](https://neil.fraser.name/software/diff_match_patch/demos/).
