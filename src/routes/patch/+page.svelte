@@ -63,69 +63,67 @@ Spock: Very like a Romulan.
   }
 </script>
 
-<body>
-  <h1>Diff, Match and Patch</h1>
-  <h2>Demo of Patch</h2>
-  <p>
-    2つのテキストを互いに差分し、パッチのリストを生成することができる。
-    そしてこれらのパッチを第三のテキストに対して適用することができる。
-    第三のテキストにそれ自身の編集がある場合、このバージョンのパッチはベストエフォートで変更を適用し、どのパッチが成功し、どのパッチが失敗したかを報告する。
-  </p>
-  <p>
-    このシナリオでは、シェイクスピアは原典である近世英語で『ハムレット』を書いた。
-    その後、2つの派生作品が作られた。 ひとつは現代英語にアップデートされた『ハムレット』。
-    もう一つは近世英語で書かれたスタートレックのパロディである。
-    このデモンストレーションでは、原典と現代英語版の間のパッチのリストを作成する。
-    そして、それらのパッチをスタートレックのパロディに適用し、現代英語のスタートレックのパロディを作成する。
-  </p>
+<h1>Diff, Match and Patch</h1>
+<h2>Demo of Patch</h2>
+<p>
+  2つのテキストを互いに差分し、パッチのリストを生成することができる。
+  そしてこれらのパッチを第三のテキストに対して適用することができる。
+  第三のテキストにそれ自身の編集がある場合、このバージョンのパッチはベストエフォートで変更を適用し、どのパッチが成功し、どのパッチが失敗したかを報告する。
+</p>
+<p>
+  このシナリオでは、シェイクスピアは原典である近世英語で『ハムレット』を書いた。
+  その後、2つの派生作品が作られた。 ひとつは現代英語にアップデートされた『ハムレット』。
+  もう一つは近世英語で書かれたスタートレックのパロディである。
+  このデモンストレーションでは、原典と現代英語版の間のパッチのリストを作成する。
+  そして、それらのパッチをスタートレックのパロディに適用し、現代英語のスタートレックのパロディを作成する。
+</p>
 
-  <form on:submit|preventDefault={diff_launch}>
-    <h3>Shakespeare's copy:</h3>
-    <table width="100%">
+<form on:submit|preventDefault={diff_launch}>
+  <h3>Shakespeare's copy:</h3>
+  <table width="100%">
+    <td width="50%"
+      >Old Version:<br />
+      <textarea bind:value={new_text} rows="10" />
+    </td>
+    <td width="50%"
+      >New Version:<br />
+      <textarea bind:value={old_text} rows="10" />
+    </td>
+  </table>
+  <p>
+    <button type="submit"> Compute Patch </button>
+  </p>
+  {#if patch_text.length > 0}
+    <blockquote>
+      <div id="diffoutputdiv">
+        {@html marked(`<fieldset><legend>Patch:</legend><pre>${patch_text}</pre></fieldset>`)}
+      </div>
+    </blockquote>
+    <div id="diffdatediv">{(elapsed_diff / 1000).toFixed(3)}s</div>
+  {/if}
+</form>
+<form on:submit|preventDefault={patch_launch}>
+  <h3>Trekkie's copy:</h3>
+  <table width="100%">
+    <tr>
       <td width="50%"
         >Old Version:<br />
-        <textarea bind:value={new_text} rows="10" />
+        <textarea bind:value={old_text_target} rows="10" />
       </td>
       <td width="50%"
         >New Version:<br />
-        <textarea bind:value={old_text} rows="10" />
+        <textarea bind:value={new_text_target} rows="10" />
       </td>
-    </table>
-    <p>
-      <button type="submit"> Compute Patch </button>
-    </p>
-    {#if patch_text.length > 0}
-      <blockquote>
-        <div id="diffoutputdiv">
-          {@html marked(`<fieldset><legend>Patch:</legend><pre>${patch_text}</pre></fieldset>`)}
-        </div>
-      </blockquote>
-      <div id="diffdatediv">{(elapsed_diff / 1000).toFixed(3)}s</div>
-    {/if}
-  </form>
-  <form on:submit|preventDefault={patch_launch}>
-    <h3>Trekkie's copy:</h3>
-    <table width="100%">
-      <tr>
-        <td width="50%"
-          >Old Version:<br />
-          <textarea bind:value={old_text_target} rows="10" />
-        </td>
-        <td width="50%"
-          >New Version:<br />
-          <textarea bind:value={new_text_target} rows="10" />
-        </td>
-      </tr>
-    </table>
-    <p>
-      <button disabled={!patched}> Apply Patch </button>
-    </p>
-  </form>
-  {#if html.length > 0}
-    <ol id="passfaildiv">{@html marked(html)}</ol>
-    <div id="patchdatediv">{(elapsed_patch / 1000).toFixed(3)}s</div>
-  {/if}
-</body>
+    </tr>
+  </table>
+  <p>
+    <button disabled={!patched}> Apply Patch </button>
+  </p>
+</form>
+{#if html.length > 0}
+  <ol id="passfaildiv">{@html marked(html)}</ol>
+  <div id="patchdatediv">{(elapsed_patch / 1000).toFixed(3)}s</div>
+{/if}
 
 <style>
   textarea {
